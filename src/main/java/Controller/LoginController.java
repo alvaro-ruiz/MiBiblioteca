@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.Usuario;
+import bd.DaoUser;
 import Model.UserService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,7 +33,7 @@ public class LoginController {
     @FXML
     private Button registerButton;
 
-    //private UserService userService = new UserService();
+    private UserService userService = new UserService();
 
     @FXML
     void initialize() {
@@ -40,7 +41,7 @@ public class LoginController {
     }
 
     @FXML
-    void handleLogin(ActionEvent event) {
+    void login(ActionEvent event) {
         String email = emailField.getText().trim();
         String password = passwordField.getText().trim();
 
@@ -52,11 +53,10 @@ public class LoginController {
 
         try {
             if (email.contains("@")) {
-                Usuario loggedInUser = new Usuario();
+                Usuario loggedInUser = DaoUser.loginUsuario(email, password);
                 userService.setCurrentUser(loggedInUser);
-                
-                // Navegar a la pantalla principal
-                navigateToDashboard(event);
+
+                showPrincipal(event);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error de inicio de sesión", 
                         "Credenciales incorrectas. Por favor, inténtelo de nuevo.");
@@ -68,7 +68,7 @@ public class LoginController {
     }
 
     @FXML
-    void handleRegister(ActionEvent event) {
+    void register(ActionEvent event) {
         try {
             Parent registerView = FXMLLoader.load(MainApp.class.getResource("/View/Register.fxml"));
             Scene registerScene = new Scene(registerView);
@@ -81,9 +81,9 @@ public class LoginController {
         }
     }
 
-    private void navigateToDashboard(ActionEvent event) {
+    private void showPrincipal(ActionEvent event) {
         try {
-            Parent dashboardView = FXMLLoader.load(MainApp.class.getResource("/fxml/Dashboard.fxml"));
+            Parent dashboardView = FXMLLoader.load(MainApp.class.getResource("/View/Principal.fxml"));
             Scene dashboardScene = new Scene(dashboardView);
             Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
             window.setScene(dashboardScene);

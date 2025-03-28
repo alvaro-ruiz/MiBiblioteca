@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="400.0" prefWidth="600.0" stylesheets="@../styles/styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
+<BorderPane prefHeight="400.0" prefWidth="600.0" stylesheets="@../styles/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.LoginController">
    <top>
       <HBox alignment="CENTER" styleClass="header" BorderPane.alignment="CENTER">
          <children>
@@ -46,9 +46,9 @@
                   <PasswordField fx:id="passwordField" promptText="Tu contraseña" />
                </children>
             </VBox>
-            <Button fx:id="loginButton" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogin" styleClass="primary-button" text="Iniciar Sesión" />
+            <Button fx:id="loginButton" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#login" styleClass="primary-button" text="Iniciar Sesión" />
             <Label text="¿No tienes una cuenta?" textAlignment="CENTER" />
-            <Button fx:id="registerButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleRegister" styleClass="secondary-button" text="Registrarse" />
+            <Button fx:id="registerButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#register" styleClass="secondary-button" text="Registrarse" />
          </children>
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
@@ -56,4 +56,3 @@
       </VBox>
    </center>
 </BorderPane>
-

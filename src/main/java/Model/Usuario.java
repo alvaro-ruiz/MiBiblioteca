@@ -2,7 +2,7 @@ package Model;
 
 public class Usuario {
     
-    private Long id;
+    private int id;
     private String nombre;
     private String email;
     private String password;
@@ -10,7 +10,13 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(Long id, String nombre, String email, String password) {
+    public Usuario(String nombre, String email, String password) {
+        this.nombre = nombre;
+        this.email = email;
+        this.password = password;
+    }
+    
+    public Usuario(int id, String nombre, String email, String password) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
@@ -18,11 +24,11 @@ public class Usuario {
     }
 
     // Getters y setters
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
