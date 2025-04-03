@@ -9,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
@@ -16,6 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
 
 import Main.MainApp;
 
@@ -69,16 +71,23 @@ public class LoginController {
 
     @FXML
     void register(ActionEvent event) {
-        try {
-            Parent registerView = FXMLLoader.load(MainApp.class.getResource("/View/Register.fxml"));
-            Scene registerScene = new Scene(registerView);
-            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            window.setScene(registerScene);
-            window.show();
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Error", 
-                    "No se pudo cargar la pantalla de registro: " + e.getMessage());
-        }
+    	try {
+    	    URL fxmlLocation = MainApp.class.getResource("/View/Register.fxml");
+    	    if (fxmlLocation == null) {
+    	        throw new IOException("No se encontró el archivo FXML.");
+    	    }
+    	    
+    	    FXMLLoader loader = new FXMLLoader(fxmlLocation);
+    	    Parent root = loader.load();
+    	    
+    	    Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+    	    window.setTitle("Registro");
+    	    window.setScene(new Scene(root));
+    	    window.show();
+    	} catch (IOException e) {
+    	    e.printStackTrace(); // Imprime el error en la consola
+    	    showAlert(Alert.AlertType.ERROR, "Error", "No se pudo cargar la pantalla de registro: " + e.getMessage());
+    	}
     }
 
     private void showPrincipal(ActionEvent event) {
