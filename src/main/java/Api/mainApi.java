@@ -9,7 +9,7 @@ public class mainApi {
     public static void main(String[] args) {
         List<Book> books = GoogleBooksAPI.searchBooks("starwars");
         for (Book book : books) {
-            System.out.println(book.getTitle());
+            System.out.println(book.getTitle() + ", " + book.getIsbn());
         }
     }
 

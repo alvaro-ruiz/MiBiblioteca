@@ -52,8 +52,7 @@ public class GoogleBooksAPI {
 
                     // Extraemos los datos del libro
                     String title = volumeInfo.optString("title", "Sin título");
-
-                    // Extraemos la lista de autores
+                    
                     List<String> authors = new ArrayList<>();
                     JSONArray authorsArray = volumeInfo.optJSONArray("authors");
                     if (authorsArray != null) {
@@ -64,7 +63,6 @@ public class GoogleBooksAPI {
 
                     String description = volumeInfo.optString("description", "Sin descripción");
 
-                    // Extraer el ISBN (preferimos ISBN-13)
                     String isbn = "No disponible";
                     JSONArray industryIdentifiers = volumeInfo.optJSONArray("industryIdentifiers");
                     if (industryIdentifiers != null) {

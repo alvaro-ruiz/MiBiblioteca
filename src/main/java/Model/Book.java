@@ -3,7 +3,7 @@ package Model;
 import java.util.List;
 
 public class Book {
-    private String id;
+	private String isbn;
     private String title;
     private String subtitle;
     private List<String> authors;
@@ -15,25 +15,24 @@ public class Book {
     private String thumbnail;
     private String language;
     private String previewLink;
-    private String isbn;
 
     public Book() {
     }
 
-    public Book(String id, String title, List<String> authors, String thumbnail) {
-        this.id = id;
+    public Book(String isbn, String title, List<String> authors, String thumbnail) {
+        this.isbn = isbn;
         this.title = title;
         this.authors = authors;
         this.thumbnail = thumbnail;
     }
 
     // Getters y setters
-    public String getId() {
-        return id;
+    public String getIsbn() {
+        return isbn;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     public String getTitle() {
@@ -124,12 +123,5 @@ public class Book {
         this.previewLink = previewLink;
     }
 
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
 }
 
