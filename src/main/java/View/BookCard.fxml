@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="200.0" spacing="10.0" styleClass="book-card" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.BookCardController">
+   <children>
+      <ImageView fx:id="coverImageView" fitHeight="200.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" />
+      <Label fx:id="titleLabel" styleClass="book-title" text="Título del libro" textAlignment="CENTER" wrapText="true" />
+      <Label fx:id="authorLabel" styleClass="book-author" text="Autor del libro" textAlignment="CENTER" wrapText="true" />
+      <Button fx:id="viewDetailsButton" mnemonicParsing="false" onAction="#handleViewDetails" styleClass="secondary-button" text="Ver detalles" />
+   </children>
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
+</VBox>

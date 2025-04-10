@@ -13,13 +13,15 @@ public class DaoUser {
 	
     // Agregar un usuario
     public static boolean addUsuario(Usuario usuario) {
-        String sql = "INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO usuarios (nombre, email, genero, password) VALUES (?, ?, ?, ?)";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, usuario.getNombre());
             stmt.setString(2, usuario.getEmail());
-            stmt.setString(3, usuario.getPassword()); // Recuerda encriptar la contraseña en la app
+            stmt.setString(3, usuario.getGenero());
+            stmt.setString(4, usuario.getPassword());
+            
             
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -39,10 +41,34 @@ public class DaoUser {
 
             if (rs.next()) {
                 return new Usuario(
-                    rs.getInt("id"),
-                    rs.getString("nombre"),
-                    rs.getString("email"),
-                    rs.getString("password")
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("email"),
+                        rs.getString("genero"),
+                        rs.getString("password")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    public static Usuario getUsuarioByEmail(String email) {
+        String sql = "SELECT * FROM usuarios WHERE email = ?";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("email"),
+                        rs.getString("genero"),
+                        rs.getString("password")
                 );
             }
         } catch (SQLException e) {
@@ -80,10 +106,11 @@ public class DaoUser {
 
             while (rs.next()) {
                 usuarios.add(new Usuario(
-                    rs.getInt("id"),
-                    rs.getString("nombre"),
-                    rs.getString("email"),
-                    rs.getString("password")
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("email"),
+                        rs.getString("genero"),
+                        rs.getString("password")
                 ));
             }
         } catch (SQLException e) {
@@ -108,6 +135,7 @@ public class DaoUser {
                     rs.getInt("id"),
                     rs.getString("nombre"),
                     rs.getString("email"),
+                    rs.getString("genero"),
                     rs.getString("password")
                 );
             }

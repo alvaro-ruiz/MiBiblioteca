@@ -10,6 +10,12 @@
   -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 3);
 }
 
+/* Estilos para la barra de búsqueda */
+.search-bar {
+  -fx-background-color: white;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+}
+
 /* Estilos para los contenedores de formularios */
 .form-container {
   -fx-background-color: white;
@@ -43,3 +49,85 @@
 .secondary-button:hover {
   -fx-background-color: #f5f5f5;
 }
+
+/* Estilos para las tarjetas de libros */
+.book-card {
+  -fx-background-color: white;
+  -fx-background-radius: 5;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+}
+
+.book-title {
+  -fx-font-weight: bold;
+  -fx-font-size: 14px;
+}
+
+.book-author {
+  -fx-text-fill: #757575;
+  -fx-font-size: 12px;
+}
+
+/* Estilos para los detalles del libro */
+.book-detail-title {
+  -fx-font-weight: bold;
+  -fx-font-size: 24px;
+}
+
+.book-detail-author {
+  -fx-text-fill: #757575;
+  -fx-font-size: 18px;
+}
+
+.section-title {
+  -fx-font-weight: bold;
+  -fx-font-size: 18px;
+}
+
+/* Estilos para las etiquetas de categorías */
+.category-chip {
+  -fx-background-color: #e0e0e0;
+  -fx-padding: 5 10 5 10;
+  -fx-background-radius: 15;
+  -fx-font-size: 12px;
+}
+
+/* Estilos para ComboBox */
+.combo-box {
+  -fx-background-color: white;
+  -fx-border-color: #e0e0e0;
+  -fx-border-width: 1;
+  -fx-padding: 5;
+  -fx-background-radius: 3;
+  -fx-border-radius: 3;
+}
+
+.combo-box:focused {
+  -fx-border-color: #1976d2;
+}
+
+.combo-box .arrow-button {
+  -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+  -fx-background-color: #757575;
+}
+
+.combo-box-popup .list-view {
+  -fx-background-color: white;
+  -fx-border-color: #e0e0e0;
+}
+
+.combo-box-popup .list-cell {
+  -fx-padding: 8 12 8 12;
+  -fx-background-color: white;
+}
+
+.combo-box-popup .list-cell:hover {
+  -fx-background-color: #f5f5f5;
+}
+
+.combo-box-popup .list-cell:selected {
+  -fx-background-color: #e3f2fd;
+}
+

@@ -85,7 +85,7 @@ public class LoginController {
     	    window.setScene(new Scene(root));
     	    window.show();
     	} catch (IOException e) {
-    	    e.printStackTrace(); // Imprime el error en la consola
+    	    e.printStackTrace();
     	    showAlert(Alert.AlertType.ERROR, "Error", "No se pudo cargar la pantalla de registro: " + e.getMessage());
     	}
     }

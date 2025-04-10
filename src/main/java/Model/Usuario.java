@@ -6,20 +6,20 @@ public class Usuario {
     private String nombre;
     private String email;
     private String password;
+    private String genero;
 
-    public Usuario() {
-    }
-
-    public Usuario(String nombre, String email, String password) {
+    public Usuario(String nombre, String email, String genero, String password) {
         this.nombre = nombre;
         this.email = email;
         this.password = password;
+        this.genero = genero;
     }
     
-    public Usuario(int id, String nombre, String email, String password) {
+    public Usuario(int id, String nombre, String email, String genero, String password) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
+        this.genero = genero;
         this.password = password;
     }
 
@@ -56,7 +56,15 @@ public class Usuario {
         this.password = password;
     }
 
-    @Override
+	public String getGenero() {
+		return genero;
+	}
+
+	public void setGenero(String genero) {
+		this.genero = genero;
+	}
+
+	@Override
     public String toString() {
         return "Usuario{" +
                 "id=" + id +
