@@ -72,7 +72,7 @@ public class PrincipalController {
         
         CompletableFuture.supplyAsync(() -> {
             try {
-                return GoogleBooksAPI.searchBooks("programming");
+                return GoogleBooksAPI.searchBooksByGenre(userService.getCurrentUser().getGenero());
             } catch (Exception e) {
                 return null;
             }
@@ -95,7 +95,7 @@ public class PrincipalController {
         
         if (query.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Búsqueda vacía", 
-                    "Por favor, ingrese un término de búsqueda.");
+                    "Por favor, ingrese un libro para buscarlo");
             return;
         }
         
@@ -128,11 +128,11 @@ public class PrincipalController {
         booksGrid.getChildren().clear();
         
         int column = 0;
-        int row = 0;
+        int row = 1;
         
         for (Book book : booksList) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BookCard.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/BookCard.fxml"));
                 VBox bookCard = loader.load();
                 
                 BookCardController controller = loader.getController();
@@ -140,9 +140,9 @@ public class PrincipalController {
                 controller.setOnViewDetailsAction(e -> viewBookDetails(book));
                 
                 booksGrid.add(bookCard, column, row);
-                
+                System.out.println(book.getTitle());
                 column++;
-                if (column > 2) {  // 3 columnas
+                if (column > 2) {
                     column = 0;
                     row++;
                 }
@@ -153,21 +153,6 @@ public class PrincipalController {
     }
 
     private void viewBookDetails(Book book) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BookDetail.fxml"));
-            Parent detailView = loader.load();
-            
-            BookDetailController controller = loader.getController();
-            controller.setBook(book);
-            
-            Stage detailStage = new Stage();
-            detailStage.setTitle(book.getTitle());
-            detailStage.setScene(new Scene(detailView, 800, 600));
-            detailStage.show();
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Error", 
-                    "No se pudo cargar los detalles del libro: " + e.getMessage());
-        }
     }
 
     @FXML
@@ -175,14 +160,14 @@ public class PrincipalController {
         userService.logout();
         
         try {
-            Parent loginView = FXMLLoader.load(getClass().getResource("/fxml/Login.fxml"));
+            Parent loginView = FXMLLoader.load(getClass().getResource("/View/Login.fxml"));
             Scene loginScene = new Scene(loginView);
             Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
             window.setScene(loginScene);
             window.setTitle("Biblioteca Digital - Inicio de Sesión");
             window.setMaximized(false);
-            window.setWidth(600);
-            window.setHeight(400);
+            window.setWidth(700);
+            window.setHeight(500);
             window.centerOnScreen();
             window.show();
         } catch (IOException e) {
@@ -193,23 +178,6 @@ public class PrincipalController {
 
     @FXML
     void handleTabChange() {
-        if (tabPane.getSelectionModel().getSelectedItem() == favoritesTab) {
-            displayBooks(favorites);
-            
-            if (favorites.isEmpty()) {
-                statusLabel.setText("No tienes libros favoritos guardados.");
-            } else {
-                statusLabel.setText("");
-            }
-        } else {
-            displayBooks(books);
-            
-            if (books.isEmpty()) {
-                statusLabel.setText("No hay resultados de búsqueda.");
-            } else {
-                statusLabel.setText("");
-            }
-        }
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {

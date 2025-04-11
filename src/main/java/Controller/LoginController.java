@@ -58,7 +58,13 @@ public class LoginController {
                 Usuario loggedInUser = DaoUser.loginUsuario(email, password);
                 userService.setCurrentUser(loggedInUser);
 
-                showPrincipal(event);
+                if (loggedInUser != null)
+                	showPrincipal(event);
+                else {
+                	showAlert(Alert.AlertType.ERROR, "Error de inicio de sesión", 
+                            "Credenciales incorrectas. Por favor, inténtelo de nuevo.");
+                }
+                	
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error de inicio de sesión", 
                         "Credenciales incorrectas. Por favor, inténtelo de nuevo.");

@@ -17,14 +17,23 @@ public class Book {
     private String previewLink;
     private String isbn;
 
-    public Book(String id, String isbn, String title, List<String> authors, String thumbnail) {
+    public Book(String id, String isbn, String title, List<String> authors, String description) {
     	this.id = id;
         this.isbn = isbn;
         this.title = title;
         this.authors = authors;
-        this.thumbnail = thumbnail;
+        this.description = description;
     }
 
+    public Book(String id, String isbn, String title, List<String> authors, String description, String thumbnail) {
+        this.id = id;
+        this.isbn = isbn;
+        this.title = title;
+        this.authors = authors;
+        this.description = description;
+        this.thumbnail = thumbnail;
+    }
+    
     // Getters y setters
     public String getId() {
         return id;

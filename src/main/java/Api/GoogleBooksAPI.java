@@ -20,7 +20,7 @@ public class GoogleBooksAPI {
 
 	    try {
 	        String encodedQuery = URLEncoder.encode(query, "UTF-8");
-	        URL url = new URL(API_URL + encodedQuery);
+	        URL url = new URL("https://www.googleapis.com/books/v1/volumes?q=" + encodedQuery);
 	        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 	        conn.setRequestMethod("GET");
 	        conn.setRequestProperty("Accept", "application/json");
@@ -78,7 +78,14 @@ public class GoogleBooksAPI {
 	                }
 	            }
 
-	            books.add(new Book(id, isbn, title, authors, description));
+	            // Imagen (thumbnail)
+	            String thumbnail = null;
+	            JSONObject imageLinks = volumeInfo.optJSONObject("imageLinks");
+	            if (imageLinks != null) {
+	                thumbnail = imageLinks.optString("thumbnail", null);
+	            }
+
+	            books.add(new Book(id, isbn, title, authors, description, thumbnail));
 	        }
 
 	    } catch (Exception e) {
@@ -87,6 +94,7 @@ public class GoogleBooksAPI {
 
 	    return books;
 	}
+
 
 	public static List<Book> searchBooksByGenre(String genre) {
 	    String query = "subject:" + genre;

@@ -26,33 +26,43 @@ public class BookCardController {
     private Button viewDetailsButton;
 
     private Book book;
+    
     private EventHandler<ActionEvent> onViewDetailsAction;
 
     @FXML
     void initialize() {
-        // Inicialización si es necesaria
     }
 
     public void setBook(Book book) {
         this.book = book;
-        
+
         titleLabel.setText(book.getTitle());
-        authorLabel.setText(book.getAuthors() != null && !book.getAuthors().isEmpty() 
-                ? String.join(", ", book.getAuthors()) 
+
+        authorLabel.setText(book.getAuthors() != null && !book.getAuthors().isEmpty()
+                ? String.join(", ", book.getAuthors())
                 : "Autor desconocido");
-        
-        // Cargar imagen de portada
-        if (book.getThumbnail() != null && !book.getThumbnail().isEmpty()) {
+
+        String imageUrl = book.getThumbnail();
+
+        if (imageUrl != null && !imageUrl.isBlank() && imageUrl.startsWith("http")) {
             try {
-                Image image = new Image(book.getThumbnail(), true);
+                Image image = new Image(imageUrl, true);
                 coverImageView.setImage(image);
             } catch (Exception e) {
-                // Si hay un error al cargar la imagen, usar una imagen por defecto
-                coverImageView.setImage(new Image(getClass().getResourceAsStream("/images/book-placeholder.png")));
+                loadFallbackImage();
             }
         } else {
-            // Si no hay imagen, usar una imagen por defecto
-            coverImageView.setImage(new Image(getClass().getResourceAsStream("/images/book-placeholder.png")));
+            loadFallbackImage();
+        }
+    }
+
+    private void loadFallbackImage() {
+        try {
+            Image fallback = new Image("/recurses/libro-abierto.png");
+            coverImageView.setImage(fallback);
+        } catch (Exception ex) {
+            System.err.println("No se pudo cargar la imagen de fallback: " + ex.getMessage());
+            coverImageView.setImage(null);
         }
     }
 
