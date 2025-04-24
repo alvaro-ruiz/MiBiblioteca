@@ -3,8 +3,12 @@ package Api;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
@@ -13,88 +17,83 @@ import org.json.JSONObject;
 import Model.Book;
 
 public class GoogleBooksAPI {
-	private static final String API_URL = "https://www.googleapis.com/books/v1/volumes?q=";
+    private static final String API_URL = "https://www.googleapis.com/books/v1/volumes?q=";
 
-	public static List<Book> searchBooks(String query) {
-	    List<Book> books = new ArrayList<>();
+    public static List<Book> searchBooks(String query) {
+        List<Book> books = new ArrayList<>();
 
-	    try {
-	        String encodedQuery = URLEncoder.encode(query, "UTF-8");
-	        URL url = new URL("https://www.googleapis.com/books/v1/volumes?q=" + encodedQuery);
-	        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	        conn.setRequestMethod("GET");
-	        conn.setRequestProperty("Accept", "application/json");
+        try {
+            String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
+            String fullUrl = API_URL + encodedQuery;
 
-	        if (conn.getResponseCode() != 200) {
-	            throw new RuntimeException("Error en la conexión: " + conn.getResponseCode());
-	        }
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(fullUrl))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
 
-	        StringBuilder response = new StringBuilder();
-	        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-	            String line;
-	            while ((line = br.readLine()) != null) {
-	                response.append(line);
-	            }
-	        }
-	        conn.disconnect();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-	        JSONArray items = new JSONObject(response.toString()).optJSONArray("items");
-	        if (items == null) return books;
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Error en la conexión: " + response.statusCode());
+            }
 
-	        for (int i = 0; i < items.length(); i++) {
-	            JSONObject item = items.getJSONObject(i);
-	            JSONObject volumeInfo = item.optJSONObject("volumeInfo");
+            JSONObject jsonResponse = new JSONObject(response.body());
+            JSONArray items = jsonResponse.optJSONArray("items");
 
-	            if (volumeInfo == null) continue;
+            if (items == null) return books;
 
-	            String id = item.optString("id", "Sin ID");
-	            String title = volumeInfo.optString("title", "Sin título");
-	            String description = volumeInfo.optString("description", "Sin descripción");
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                JSONObject volumeInfo = item.optJSONObject("volumeInfo");
 
-	            // Autores
-	            List<String> authors = new ArrayList<>();
-	            JSONArray authorsArray = volumeInfo.optJSONArray("authors");
-	            if (authorsArray != null) {
-	                for (int j = 0; j < authorsArray.length(); j++) {
-	                    authors.add(authorsArray.optString(j));
-	                }
-	            }
+                if (volumeInfo == null) continue;
 
-	            // ISBN
-	            String isbn = "No disponible";
-	            JSONArray identifiers = volumeInfo.optJSONArray("industryIdentifiers");
-	            if (identifiers != null) {
-	                for (int j = 0; j < identifiers.length(); j++) {
-	                    JSONObject identifier = identifiers.optJSONObject(j);
-	                    if (identifier == null) continue;
+                String id = item.optString("id", "Sin ID");
+                String title = volumeInfo.optString("title", "Sin título");
+                String description = volumeInfo.optString("description", "Sin descripción");
 
-	                    String type = identifier.optString("type");
-	                    if ("ISBN_13".equals(type)) {
-	                        isbn = identifier.optString("identifier");
-	                        break;
-	                    } else if ("ISBN_10".equals(type)) {
-	                        isbn = identifier.optString("identifier");
-	                    }
-	                }
-	            }
+                List<String> authors = new ArrayList<>();
+                JSONArray authorsArray = volumeInfo.optJSONArray("authors");
+                if (authorsArray != null) {
+                    for (int j = 0; j < authorsArray.length(); j++) {
+                        authors.add(authorsArray.optString(j));
+                    }
+                }
 
-	            // Imagen (thumbnail)
-	            String thumbnail = null;
-	            JSONObject imageLinks = volumeInfo.optJSONObject("imageLinks");
-	            if (imageLinks != null) {
-	                thumbnail = imageLinks.optString("thumbnail", null);
-	            }
+                String isbn = "No disponible";
+                JSONArray identifiers = volumeInfo.optJSONArray("industryIdentifiers");
+                if (identifiers != null) {
+                    for (int j = 0; j < identifiers.length(); j++) {
+                        JSONObject identifier = identifiers.optJSONObject(j);
+                        if (identifier == null) continue;
 
-	            books.add(new Book(id, isbn, title, authors, description, thumbnail));
-	        }
+                        String type = identifier.optString("type");
+                        if ("ISBN_13".equals(type)) {
+                            isbn = identifier.optString("identifier");
+                            break;
+                        } else if ("ISBN_10".equals(type)) {
+                            isbn = identifier.optString("identifier");
+                        }
+                    }
+                }
 
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
+                String thumbnail = null;
+                JSONObject imageLinks = volumeInfo.optJSONObject("imageLinks");
+                if (imageLinks != null) {
+                    thumbnail = imageLinks.optString("thumbnail", null);
+                }
 
-	    return books;
-	}
+                books.add(new Book(id, isbn, title, authors, description, thumbnail));
+            }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return books;
+    }
 
 	public static List<Book> searchBooksByGenre(String genre) {
 	    String query = "subject:" + genre;

@@ -70,11 +70,16 @@ public class BookCardController {
         this.onViewDetailsAction = handler;
         viewDetailsButton.setOnAction(handler);
     }
+    
+	public EventHandler<ActionEvent> getOnViewDetailsAction() {
+		return onViewDetailsAction;
+	}
 
-    @FXML
+	@FXML
     void handleViewDetails(ActionEvent event) {
         if (onViewDetailsAction != null) {
             onViewDetailsAction.handle(event);
+            
         }
     }
 }

@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 import Model.*;
 import Api.GoogleBooksAPI;
+import Main.MainApp;
 
 public class PrincipalController {
 
@@ -140,7 +141,6 @@ public class PrincipalController {
                 controller.setOnViewDetailsAction(e -> viewBookDetails(book));
                 
                 booksGrid.add(bookCard, column, row);
-                System.out.println(book.getTitle());
                 column++;
                 if (column > 2) {
                     column = 0;
@@ -153,6 +153,21 @@ public class PrincipalController {
     }
 
     private void viewBookDetails(Book book) {
+    	 try {
+             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BookDetail.fxml"));
+             Parent detailView = loader.load();
+             
+             DetallesController controller = loader.getController();
+             controller.setBook(book);
+             
+             Stage detailStage = new Stage();
+             detailStage.setTitle(book.getTitle());
+             detailStage.setScene(new Scene(detailView, 800, 600));
+             detailStage.show();
+         } catch (IOException e) {
+             showAlert(Alert.AlertType.ERROR, "Error", 
+                     "No se pudo cargar los detalles del libro: " + e.getMessage());
+         }
     }
 
     @FXML
