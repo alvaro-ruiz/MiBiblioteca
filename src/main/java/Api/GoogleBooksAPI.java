@@ -19,6 +19,11 @@ import Model.Book;
 public class GoogleBooksAPI {
     private static final String API_URL = "https://www.googleapis.com/books/v1/volumes?q=";
 
+    /**
+     * Busca
+     * @param query
+     * @return
+     */
     public static List<Book> searchBooks(String query) {
         List<Book> books = new ArrayList<>();
 
@@ -95,11 +100,21 @@ public class GoogleBooksAPI {
         return books;
     }
 
+    /**
+     * Busca libros en la API
+     * @param genre
+     * @return
+     */
 	public static List<Book> searchBooksByGenre(String genre) {
 	    String query = "subject:" + genre;
 	    return searchBooks(query);
 	}
 	
+	/**
+	 * Busca libros por id
+	 * @param volumeId
+	 * @return
+	 */
 	public static Book searchBookById(String volumeId) {
 	    try {
 	        String urlStr = "https://www.googleapis.com/books/v1/volumes/" + volumeId;

@@ -1,5 +1,7 @@
 package Controller;
 
+import Model.Book;
+import Model.UserService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,21 +12,29 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import Model.*;
 import Api.GoogleBooksAPI;
-import Main.MainApp;
 
 public class PrincipalController {
+
+    @FXML
+    private BorderPane mainBorderPane;
+    
+    @FXML
+    private VBox topBar;
+    
+    @FXML
+    private HBox searchBar;
 
     @FXML
     private Label welcomeLabel;
@@ -46,6 +56,9 @@ public class PrincipalController {
 
     @FXML
     private GridPane booksGrid;
+    
+    @FXML
+    private GridPane favoritesGrid;
 
     @FXML
     private Label statusLabel;
@@ -73,7 +86,7 @@ public class PrincipalController {
         
         CompletableFuture.supplyAsync(() -> {
             try {
-                return GoogleBooksAPI.searchBooksByGenre(userService.getCurrentUser().getGenero());
+                return GoogleBooksAPI.searchBooks(userService.getCurrentUser().getGenero());
             } catch (Exception e) {
                 return null;
             }
@@ -96,7 +109,7 @@ public class PrincipalController {
         
         if (query.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Búsqueda vacía", 
-                    "Por favor, ingrese un libro para buscarlo");
+                    "Por favor, ingrese un término de búsqueda.");
             return;
         }
         
@@ -129,7 +142,7 @@ public class PrincipalController {
         booksGrid.getChildren().clear();
         
         int column = 0;
-        int row = 1;
+        int row = 0;
         
         for (Book book : booksList) {
             try {
@@ -141,8 +154,37 @@ public class PrincipalController {
                 controller.setOnViewDetailsAction(e -> viewBookDetails(book));
                 
                 booksGrid.add(bookCard, column, row);
+                
                 column++;
-                if (column > 2) {
+                if (column > 2) {  // 3 columnas
+                    column = 0;
+                    row++;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void displayFavorites() {
+        favoritesGrid.getChildren().clear();
+        
+        int column = 0;
+        int row = 0;
+        
+        for (Book book : favorites) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/BookCard.fxml"));
+                VBox bookCard = loader.load();
+                
+                BookCardController controller = loader.getController();
+                controller.setBook(book);
+                controller.setOnViewDetailsAction(e -> viewBookDetails(book));
+                
+                favoritesGrid.add(bookCard, column, row);
+                
+                column++;
+                if (column > 2) {  // 3 columnas
                     column = 0;
                     row++;
                 }
@@ -153,21 +195,32 @@ public class PrincipalController {
     }
 
     private void viewBookDetails(Book book) {
-    	 try {
-             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BookDetail.fxml"));
-             Parent detailView = loader.load();
-             
-             DetallesController controller = loader.getController();
-             controller.setBook(book);
-             
-             Stage detailStage = new Stage();
-             detailStage.setTitle(book.getTitle());
-             detailStage.setScene(new Scene(detailView, 800, 600));
-             detailStage.show();
-         } catch (IOException e) {
-             showAlert(Alert.AlertType.ERROR, "Error", 
-                     "No se pudo cargar los detalles del libro: " + e.getMessage());
-         }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/BookDetail.fxml"));
+            Parent detailView = loader.load();
+            
+            DetallesController controller = loader.getController();
+            controller.setBook(book);
+            controller.setFavorites(favorites);
+            controller.setOnFavoriteChangedCallback(this::handleFavoriteChanged);
+            
+            Stage detailStage = new Stage();
+            detailStage.setTitle(book.getTitle());
+            detailStage.setScene(new Scene(detailView, 800, 600));
+            detailStage.initModality(Modality.WINDOW_MODAL);
+            detailStage.initOwner(mainBorderPane.getScene().getWindow());
+            detailStage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Error", 
+                    "No se pudo cargar los detalles del libro: " + e.getMessage());
+        }
+    }
+    
+    private void handleFavoriteChanged() {
+        // Actualizar la vista de favoritos si está visible
+        if (tabPane.getSelectionModel().getSelectedItem() == favoritesTab) {
+            displayFavorites();
+        }
     }
 
     @FXML
@@ -181,8 +234,8 @@ public class PrincipalController {
             window.setScene(loginScene);
             window.setTitle("Biblioteca Digital - Inicio de Sesión");
             window.setMaximized(false);
-            window.setWidth(700);
-            window.setHeight(500);
+            window.setWidth(600);
+            window.setHeight(400);
             window.centerOnScreen();
             window.show();
         } catch (IOException e) {
@@ -193,6 +246,23 @@ public class PrincipalController {
 
     @FXML
     void handleTabChange() {
+        if (tabPane.getSelectionModel().getSelectedItem() == favoritesTab) {
+            displayFavorites();
+            
+            if (favorites.isEmpty()) {
+                statusLabel.setText("No tienes libros favoritos guardados.");
+            } else {
+                statusLabel.setText("");
+            }
+        } else {
+            displayBooks(books);
+            
+            if (books.isEmpty()) {
+                statusLabel.setText("No hay resultados de búsqueda.");
+            } else {
+                statusLabel.setText("");
+            }
+        }
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {

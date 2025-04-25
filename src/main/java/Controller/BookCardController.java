@@ -79,7 +79,6 @@ public class BookCardController {
     void handleViewDetails(ActionEvent event) {
         if (onViewDetailsAction != null) {
             onViewDetailsAction.handle(event);
-            
         }
     }
 }
