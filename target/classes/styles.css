@@ -55,16 +55,19 @@
   -fx-background-color: white;
   -fx-background-radius: 5;
   -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+  -fx-border-color: #e0e0e0;
+  -fx-border-width: 1;
+  -fx-border-radius: 5;
 }
 
 .book-title {
   -fx-font-weight: bold;
-  -fx-font-size: 14px;
+  -fx-font-size: 12px;
 }
 
 .book-author {
   -fx-text-fill: #757575;
-  -fx-font-size: 12px;
+  -fx-font-size: 11px;
 }
 
 /* Estilos para los detalles del libro */
@@ -91,43 +94,8 @@
   -fx-font-size: 12px;
 }
 
-/* Estilos para ComboBox */
-.combo-box {
-  -fx-background-color: white;
-  -fx-border-color: #e0e0e0;
-  -fx-border-width: 1;
-  -fx-padding: 5;
-  -fx-background-radius: 3;
-  -fx-border-radius: 3;
+/* Ajustes para mostrar más libros */
+.book-card .button {
+  -fx-padding: 6 10 6 10;
+  -fx-font-size: 11px;
 }
-
-.combo-box:focused {
-  -fx-border-color: #1976d2;
-}
-
-.combo-box .arrow-button {
-  -fx-background-color: transparent;
-}
-
-.combo-box .arrow {
-  -fx-background-color: #757575;
-}
-
-.combo-box-popup .list-view {
-  -fx-background-color: white;
-  -fx-border-color: #e0e0e0;
-}
-
-.combo-box-popup .list-cell {
-  -fx-padding: 8 12 8 12;
-  -fx-background-color: white;
-}
-
-.combo-box-popup .list-cell:hover {
-  -fx-background-color: #f5f5f5;
-}
-
-.combo-box-popup .list-cell:selected {
-  -fx-background-color: #e3f2fd;
-}
-

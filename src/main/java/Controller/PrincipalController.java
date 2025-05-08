@@ -156,7 +156,7 @@ public class PrincipalController {
                 booksGrid.add(bookCard, column, row);
                 
                 column++;
-                if (column > 2) {  // 3 columnas
+                if (column > 5) {  // 3 columnas
                     column = 0;
                     row++;
                 }
@@ -170,7 +170,7 @@ public class PrincipalController {
         favoritesGrid.getChildren().clear();
         
         int column = 0;
-        int row = 0;
+        int row = 1;
         
         for (Book book : favorites) {
             try {
@@ -196,7 +196,7 @@ public class PrincipalController {
 
     private void viewBookDetails(Book book) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/BookDetail.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/Detalles.fxml"));
             Parent detailView = loader.load();
             
             DetallesController controller = loader.getController();

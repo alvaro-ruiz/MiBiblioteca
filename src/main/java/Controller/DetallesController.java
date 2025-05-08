@@ -1,6 +1,7 @@
 package Controller;
 
 import Model.Book;
+import Api.GoogleBooksAPI;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,10 +18,11 @@ import javafx.stage.Stage;
 import java.awt.Desktop;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
-import Api.GoogleBooksAPI;
-
+/*
+ * Se me solapan los libro y el header
+ * @author Alvaro
+ *
+ */
 public class DetallesController {
 
     @FXML
@@ -85,11 +87,11 @@ public class DetallesController {
                 coverImageView.setImage(image);
             } catch (Exception e) {
                 // Si hay un error al cargar la imagen, usar una imagen por defecto
-                coverImageView.setImage(new Image(getClass().getResourceAsStream("/images/book-placeholder.png")));
+                coverImageView.setImage(new Image(getClass().getResourceAsStream("/resurces/libro-abierto.png")));
             }
         } else {
             // Si no hay imagen, usar una imagen por defecto
-            coverImageView.setImage(new Image(getClass().getResourceAsStream("/images/book-placeholder.png")));
+            coverImageView.setImage(new Image(getClass().getResourceAsStream("/resurces/libro-abierto.png")));
         }
         
         // Cargar detalles completos del libro
@@ -193,3 +195,4 @@ public class DetallesController {
         stage.close();
     }
 }
+
