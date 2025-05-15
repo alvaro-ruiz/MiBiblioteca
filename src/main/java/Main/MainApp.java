@@ -12,8 +12,8 @@ public class MainApp extends Application{
         Parent root = FXMLLoader.load(MainApp.class.getResource("/View/Login.fxml"));
         primaryStage.setTitle("Biblioteca Digital - Google Books");
         primaryStage.setScene(new Scene(root, 600, 400));
-        primaryStage.setMinWidth(600);
-        primaryStage.setMinHeight(400);
+        primaryStage.setMinWidth(800);
+        primaryStage.setMinHeight(600);
         primaryStage.show();
     }
 

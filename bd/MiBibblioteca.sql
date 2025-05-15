@@ -26,6 +26,7 @@ CREATE TABLE libros (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     autor VARCHAR(255) NOT NULL,
+    id_api int,
     editorial VARCHAR(255),
     isbn VARCHAR(20) UNIQUE,
     fecha_publicacion DATE,
@@ -69,8 +70,14 @@ CREATE TABLE opiniones (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (libro_id) REFERENCES libros(id) ON DELETE CASCADE
 );
-
--- Índices para mejorar la búsqueda
 CREATE INDEX idx_libro_titulo ON libros (titulo);
 CREATE INDEX idx_libro_autor ON libros (autor);
 CREATE INDEX idx_libro_isbn ON libros (isbn);
+ALTER TABLE libros MODIFY COLUMN id_api VARCHAR(255);
+ALTER TABLE usuarios_libros MODIFY COLUMN estado ENUM('pendiente', 'leyendo', 'leído', 'prestado', 'deseado', 'favorito') NOT NULL;
+ALTER TABLE libros MODIFY COLUMN id_api VARCHAR(255);
+ALTER TABLE usuarios_libros MODIFY COLUMN estado ENUM('pendiente', 'leyendo', 'leído', 'prestado', 'deseado', 'favorito') NOT NULL;
+ALTER TABLE usuarios_libros 
+ADD COLUMN prestado_a VARCHAR(255) NULL,
+ADD COLUMN fecha_prestamo DATE NULL,
+ADD COLUMN devuelto BOOLEAN DEFAULT FALSE;

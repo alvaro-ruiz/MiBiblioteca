@@ -15,8 +15,20 @@ public class Book {
     private String thumbnail;
     private String language;
     private String previewLink;
+    private String id_api;
     private String isbn;
 
+    
+    public Book(String id, String isbn, String title, List<String> authors, String description, String thumbnail, String idApi) {
+        this.id = id;
+        this.isbn = isbn;
+        this.title = title;
+        this.authors = authors;
+        this.description = description;
+        this.thumbnail = thumbnail;
+        this.id_api = idApi;
+    }
+    
     public Book(String id, String isbn, String title, List<String> authors, String description) {
     	this.id = id;
         this.isbn = isbn;
@@ -138,5 +150,15 @@ public class Book {
     public void setIsbn(String isbn) {
         this.isbn = isbn;
     }
+
+	public String getId_api() {
+		return id_api;
+	}
+
+	public void setId_api(String id_api) {
+		this.id_api = id_api;
+	}
+    
+    
 }
 

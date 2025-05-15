@@ -2,9 +2,15 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -16,7 +22,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<BorderPane prefHeight="600.0" prefWidth="800.0" stylesheets="@../styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.DetallesController">
+<BorderPane prefHeight="700.0" prefWidth="900.0" stylesheets="@../styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.DetallesController">
    <top>
       <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="header" BorderPane.alignment="CENTER">
          <children>
@@ -85,6 +91,91 @@
                                     <Label fx:id="isbnLabel" text="No disponible" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                  </children>
                               </GridPane>
+                              
+                              <!-- Estado del libro -->
+                              <VBox spacing="10.0">
+                                 <children>
+                                    <Label styleClass="section-title" text="Estado del libro">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                       <children>
+                                          <Label text="Estado:" />
+                                          <ComboBox fx:id="estadoComboBox" prefWidth="200.0" />
+                                          <Button fx:id="guardarEstadoButton" mnemonicParsing="false" onAction="#handleGuardarEstado" styleClass="primary-button" text="Guardar estado" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              
+                              <!-- Sección para libros leídos -->
+                              <VBox fx:id="seccionLeido" spacing="10.0" visible="false">
+                                 <children>
+                                    <Separator />
+                                    <Label styleClass="section-title" text="Información de lectura">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                       <children>
+                                          <Label text="Fecha de lectura:" />
+                                          <DatePicker fx:id="fechaLecturaPicker" />
+                                       </children>
+                                    </HBox>
+                                    <VBox spacing="5.0">
+                                       <children>
+                                          <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                             <children>
+                                                <Label text="Valoración:" />
+                                                <Label fx:id="valoracionLabel" text="5.0" />
+                                             </children>
+                                          </HBox>
+                                          <Slider fx:id="valoracionSlider" blockIncrement="1.0" majorTickUnit="1.0" max="10.0" min="0.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="5.0" />
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="5.0">
+                                       <children>
+                                          <Label text="Comentario personal:" />
+                                          <TextArea fx:id="comentarioTextArea" prefHeight="100.0" wrapText="true" />
+                                       </children>
+                                    </VBox>
+                                    <Button fx:id="guardarLecturaButton" mnemonicParsing="false" onAction="#handleGuardarLectura" styleClass="primary-button" text="Guardar información de lectura" />
+                                 </children>
+                              </VBox>
+                              
+                              <!-- Sección para libros prestados -->
+                              <VBox fx:id="seccionPrestado" spacing="10.0" visible="false">
+                                 <children>
+                                    <Separator />
+                                    <Label styleClass="section-title" text="Información de préstamo">
+                                       <font>
+                                          <Font name="System Bold" size="16.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                       <children>
+                                          <Label text="Prestado a:" />
+                                          <TextField fx:id="prestadoATextField" HBox.hgrow="ALWAYS" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                       <children>
+                                          <Label text="Fecha de préstamo:" />
+                                          <DatePicker fx:id="fechaPrestamoDatePicker" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                       <children>
+                                          <Label text="Devuelto:" />
+                                          <ComboBox fx:id="devueltoComboBox" prefWidth="150.0" />
+                                       </children>
+                                    </HBox>
+                                    <Button fx:id="guardarPrestamoButton" mnemonicParsing="false" onAction="#handleGuardarPrestamo" styleClass="primary-button" text="Guardar información de préstamo" />
+                                 </children>
+                              </VBox>
                            </children>
                         </VBox>
                      </children>
@@ -108,4 +199,3 @@
       </ScrollPane>
    </center>
 </BorderPane>
-

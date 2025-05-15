@@ -52,12 +52,23 @@ public class GoogleBooksAPI {
                 String id = item.optString("id", "Sin ID");
                 String title = volumeInfo.optString("title", "Sin título");
                 String description = volumeInfo.optString("description", "Sin descripción");
+                String publisher = volumeInfo.optString("publisher", "");
+                String publishedDate = volumeInfo.optString("publishedDate", "");
+                int pageCount = volumeInfo.optInt("pageCount", 0);
 
                 List<String> authors = new ArrayList<>();
                 JSONArray authorsArray = volumeInfo.optJSONArray("authors");
                 if (authorsArray != null) {
                     for (int j = 0; j < authorsArray.length(); j++) {
                         authors.add(authorsArray.optString(j));
+                    }
+                }
+
+                List<String> categories = new ArrayList<>();
+                JSONArray categoriesArray = volumeInfo.optJSONArray("categories");
+                if (categoriesArray != null) {
+                    for (int j = 0; j < categoriesArray.length(); j++) {
+                        categories.add(categoriesArray.optString(j));
                     }
                 }
 
@@ -79,12 +90,25 @@ public class GoogleBooksAPI {
                 }
 
                 String thumbnail = null;
+                String previewLink = volumeInfo.optString("previewLink", "");
                 JSONObject imageLinks = volumeInfo.optJSONObject("imageLinks");
                 if (imageLinks != null) {
                     thumbnail = imageLinks.optString("thumbnail", null);
+                    // Asegurarse de que la URL use HTTPS
+                    if (thumbnail != null && thumbnail.startsWith("http:")) {
+                        thumbnail = thumbnail.replace("http:", "https:");
+                    }
                 }
 
-                books.add(new Book(id, isbn, title, authors, description, thumbnail));
+                // Crear un objeto Book completo con todos los datos
+                Book book = new Book(id, isbn, title, authors, description, thumbnail, id);
+                book.setPublisher(publisher);
+                book.setPublishedDate(publishedDate);
+                book.setPageCount(pageCount);
+                book.setCategories(categories);
+                book.setPreviewLink(previewLink);
+                
+                books.add(book);
             }
 
         } catch (Exception e) {
@@ -94,6 +118,7 @@ public class GoogleBooksAPI {
         return books;
     }
 
+
     public static List<Book> searchBooksByGenre(String genre) {
         String query = "subject:" + genre;
         return searchBooks(query);
@@ -101,7 +126,7 @@ public class GoogleBooksAPI {
 
     public static Book searchBookById(String volumeId) {
         try {
-            String urlStr = "https://www.googleapis.com/books/v1/volumes/" + volumeId + "&maxResults=40?key=" + API_KEY;
+        	String urlStr = "https://www.googleapis.com/books/v1/volumes/" + volumeId + "?key=" + API_KEY;
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -124,12 +149,24 @@ public class GoogleBooksAPI {
             String id = item.optString("id", "Sin ID");
             String title = volumeInfo.optString("title", "Sin título");
             String description = volumeInfo.optString("description", "Sin descripción");
+            String publisher = volumeInfo.optString("publisher", "");
+            String publishedDate = volumeInfo.optString("publishedDate", "");
+            int pageCount = volumeInfo.optInt("pageCount", 0);
+            String previewLink = volumeInfo.optString("previewLink", "");
 
             List<String> authors = new ArrayList<>();
             JSONArray authorsArray = volumeInfo.optJSONArray("authors");
             if (authorsArray != null) {
                 for (int j = 0; j < authorsArray.length(); j++) {
                     authors.add(authorsArray.optString(j));
+                }
+            }
+
+            List<String> categories = new ArrayList<>();
+            JSONArray categoriesArray = volumeInfo.optJSONArray("categories");
+            if (categoriesArray != null) {
+                for (int j = 0; j < categoriesArray.length(); j++) {
+                    categories.add(categoriesArray.optString(j));
                 }
             }
 
@@ -150,7 +187,25 @@ public class GoogleBooksAPI {
                 }
             }
 
-            return new Book(id, isbn, title, authors, description);
+            String thumbnail = null;
+            JSONObject imageLinks = volumeInfo.optJSONObject("imageLinks");
+            if (imageLinks != null) {
+                thumbnail = imageLinks.optString("thumbnail", null);
+                // Asegurarse de que la URL use HTTPS
+                if (thumbnail != null && thumbnail.startsWith("http:")) {
+                    thumbnail = thumbnail.replace("http:", "https:");
+                }
+            }
+
+            // Crear un objeto Book completo con todos los datos
+            Book book = new Book(id, isbn, title, authors, description, thumbnail, id);
+            book.setPublisher(publisher);
+            book.setPublishedDate(publishedDate);
+            book.setPageCount(pageCount);
+            book.setCategories(categories);
+            book.setPreviewLink(previewLink);
+            
+            return book;
 
         } catch (Exception e) {
             e.printStackTrace();
