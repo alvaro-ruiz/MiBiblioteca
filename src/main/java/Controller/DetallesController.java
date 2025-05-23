@@ -10,6 +10,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -21,6 +25,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 import java.awt.Desktop;
+import java.io.IOException;
 import java.net.URI;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -44,6 +49,7 @@ public class DetallesController {
     // Controles para el estado del libro
     @FXML private ComboBox<String> estadoComboBox;
     @FXML private Button guardarEstadoButton;
+    @FXML private Button btnVerOpiniones;
     
     // Controles para libros leídos
     @FXML private VBox seccionLeido;
@@ -445,6 +451,27 @@ public class DetallesController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    @FXML
+    void handleVerOpiniones(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/View/Opiniones.fxml"));
+            Parent opinionesView = loader.load();
+            
+            OpinionesController controller = loader.getController();
+            controller.setBook(book);
+            
+            Stage opinionesStage = new Stage();
+            opinionesStage.setTitle("Opiniones sobre " + book.getTitle());
+            opinionesStage.setScene(new Scene(opinionesView, 600, 500));
+            opinionesStage.initModality(Modality.WINDOW_MODAL);
+            opinionesStage.initOwner(closeButton.getScene().getWindow());
+            opinionesStage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "No se pudo cargar la ventana de opiniones: " + e.getMessage());
+        }
     }
 
     @FXML

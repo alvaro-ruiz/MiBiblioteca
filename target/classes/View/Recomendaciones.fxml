@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.RecomendacionesController">
+   <children>
+      <VBox layoutX="14.0" layoutY="14.0" prefHeight="672.0" prefWidth="972.0" spacing="15.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+         <children>
+            <HBox alignment="CENTER" style="-fx-background-color: #3498db; -fx-background-radius: 5;">
+               <children>
+                  <Label fx:id="welcomeLabel" text="Recomendaciones" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                     </padding>
+                  </Label>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+               <children>
+                  <Label text="Género:" textFill="#333333">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="comboGenero" prefWidth="200.0" promptText="Seleccionar género" style="-fx-background-radius: 3;" />
+                  <Label fx:id="statusLabel" textFill="#e74c3c">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+               </padding>
+            </HBox>
+            <BorderPane VBox.vgrow="ALWAYS">
+               <center>
+                  <TabPane fx:id="tabPane" style="-fx-background-color: white; -fx-background-radius: 5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+                    <tabs>
+                      <Tab fx:id="tabGenero" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" text="Por género">
+                           <content>
+                              <ScrollPane fx:id="scrollGenero" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white; -fx-border-color: transparent;">
+                                 <content>
+                                    <GridPane fx:id="gridGenero" hgap="15.0" style="-fx-background-color: white;" vgap="15.0">
+                                       <padding>
+                                          <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                       </padding>
+                                    </GridPane>
+                                 </content>
+                              </ScrollPane>
+                           </content>
+                      </Tab>
+                      <Tab fx:id="tabNuevos" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" text="Nuevas publicaciones">
+                           <content>
+                              <ScrollPane fx:id="scrollNuevos" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white; -fx-border-color: transparent;">
+                                 <content>
+                                    <GridPane fx:id="gridNuevos" hgap="15.0" style="-fx-background-color: white;" vgap="15.0">
+                                       <padding>
+                                          <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                       </padding>
+                                    </GridPane>
+                                 </content>
+                              </ScrollPane>
+                           </content>
+                      </Tab>
+                        <Tab fx:id="tabPopulares" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;" text="Populares">
+                           <content>
+                              <ScrollPane fx:id="scrollPopulares" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background: white; -fx-border-color: transparent;">
+                                 <content>
+                                    <GridPane fx:id="gridPopulares" hgap="15.0" style="-fx-background-color: white;" vgap="15.0">
+                                       <padding>
+                                          <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                       </padding>
+                                    </GridPane>
+                                 </content>
+                              </ScrollPane>
+                           </content>
+                        </Tab>
+                    </tabs>
+                  </TabPane>
+               </center>
+            </BorderPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

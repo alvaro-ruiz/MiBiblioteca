@@ -7,12 +7,127 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.sql.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DaoBook {
+    private static final Logger LOGGER = Logger.getLogger(DaoBook.class.getName());
+
+    /**
+     * Busca libros en la base de datos local según un término de búsqueda.
+     * Busca coincidencias en título, autor y categorías.
+     * 
+     * @param query Término de búsqueda
+     * @return Lista de libros que coinciden con la búsqueda
+     */
+    public static List<Book> buscarLibrosLocales(String query) {
+        List<Book> resultados = new ArrayList<>();
+        
+        if (query == null || query.trim().isEmpty()) {
+            return resultados;
+        }
+        
+        // Normalizar la consulta
+        String searchTerm = "%" + query.trim() + "%";
+        
+        Connection conn = null;
+        
+        try {
+            conn = Conexion.conectar();
+            if (conn == null) {
+                System.err.println("No se pudo establecer conexión con la base de datos");
+                return resultados;
+            }
+            
+            // Buscar libros por título, autor o ID
+            String sql = "SELECT DISTINCT l.id, l.titulo, l.autor, l.id_api, l.isbn, l.editorial, " +
+                 "l.fecha_publicacion, l.agregado_por_usuario FROM libros l " +
+                 "WHERE l.titulo LIKE ? OR l.autor LIKE ? OR l.id_api = ? " +
+                 "ORDER BY l.agregado_por_usuario DESC";
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, searchTerm);
+                stmt.setString(2, searchTerm);
+                stmt.setString(3, query.trim()); // Búsqueda exacta por ID
+                
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Book libro = mapResultSetToBook(rs);
+                        if (libro != null) {
+                            resultados.add(libro);
+                        }
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error al buscar libros locales", e);
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    LOGGER.log(Level.SEVERE, "Error al cerrar la conexión", e);
+                }
+            }
+        }
+        
+        return resultados;
+    }
+    
+    /**
+     * Convierte un ResultSet en un objeto Book.
+     * 
+     * @param rs ResultSet con los datos del libro
+     * @return Objeto Book o null si ocurre un error
+     */
+    private static Book mapResultSetToBook(ResultSet rs) throws SQLException {
+        try {
+            String id = rs.getString("id_api");
+            String isbn = rs.getString("isbn");
+            String titulo = rs.getString("titulo");
+            String autor = rs.getString("autor");
+            
+            List<String> autores = new ArrayList<>();
+            if (autor != null && !autor.isEmpty()) {
+                // Dividir autores si están separados por comas
+                String[] autoresArray = autor.split(",");
+                for (String a : autoresArray) {
+                    autores.add(a.trim());
+                }
+            } else {
+                autores.add("Desconocido");
+            }
+            
+            String descripcion = ""; // Valor por defecto
+            
+            Book book = new Book(id, isbn, titulo, autores, descripcion);
+            
+            // Establecer datos adicionales si están disponibles
+            try {
+                book.setPublisher(rs.getString("editorial"));
+            } catch (SQLException e) {
+                // Ignorar si la columna no existe
+            }
+            
+            try {
+                book.setPublishedDate(rs.getString("fecha_publicacion"));
+            } catch (SQLException e) {
+                // Ignorar si la columna no existe
+            }
+            
+            return book;
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Error al mapear ResultSet a Book", e);
+            return null;
+        }
+    }
 
     // Método para obtener todos los IDs de los libros favoritos de un usuario
     public static List<String> getLibroIDsFavoritosPorUsuario(int usuarioId) {
@@ -25,18 +140,17 @@ public class DaoBook {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, usuarioId);
-            ResultSet rs = stmt.executeQuery();
-
-            // Añadir los IDs a la lista
-            while (rs.next()) {
-                String idApi = rs.getString("id_api");
-                if (idApi != null && !idApi.isEmpty()) {
-                    favoritos.add(idApi);
+            try (ResultSet rs = stmt.executeQuery()) {
+                // Añadir los IDs a la lista
+                while (rs.next()) {
+                    String idApi = rs.getString("id_api");
+                    if (idApi != null && !idApi.isEmpty()) {
+                        favoritos.add(idApi);
+                    }
                 }
             }
-
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al obtener libros favoritos", e);
         }
 
         return favoritos;
@@ -46,33 +160,8 @@ public class DaoBook {
     public static boolean guardarFavorito(int usuarioId, Book libro) {
         try {
             // Primero, insertar o actualizar el libro en la tabla libros
-            String insertLibro = "INSERT INTO libros (titulo, autor, id_api, isbn, agregado_por_usuario) VALUES (?, ?, ?, ?, false) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)";
-            int libroId = -1;
-
-            try (Connection conn = Conexion.conectar();
-                 PreparedStatement ps = conn.prepareStatement(insertLibro, PreparedStatement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, libro.getTitle());
-                ps.setString(2, libro.getAuthors() != null && !libro.getAuthors().isEmpty() ? libro.getAuthors().get(0) : "Desconocido");
-                ps.setString(3, libro.getId());
-                ps.setString(4, libro.getIsbn());
-                ps.executeUpdate();
-
-                // Obtener el ID del libro insertado o actualizado
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    libroId = rs.getInt(1);
-                } else {
-                    // Si no se obtuvo un ID, intentar buscarlo por id_api
-                    try (PreparedStatement psFind = conn.prepareStatement("SELECT id FROM libros WHERE id_api = ?")) {
-                        psFind.setString(1, libro.getId());
-                        ResultSet rsFind = psFind.executeQuery();
-                        if (rsFind.next()) {
-                            libroId = rsFind.getInt("id");
-                        }
-                    }
-                }
-            }
-
+            int libroId = obtenerOCrearLibro(libro);
+            
             if (libroId != -1) {
                 // Ahora, insertar la relación en usuarios_libros
                 String insertRelacion = "INSERT INTO usuarios_libros (usuario_id, libro_id, estado) VALUES (?, ?, 'favorito') ON DUPLICATE KEY UPDATE estado = 'favorito'";
@@ -86,7 +175,7 @@ public class DaoBook {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al guardar favorito", e);
             return false;
         }
     }
@@ -99,9 +188,10 @@ public class DaoBook {
             try (Connection conn = Conexion.conectar();
                  PreparedStatement ps = conn.prepareStatement("SELECT id FROM libros WHERE id_api = ?")) {
                 ps.setString(1, bookApiId);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    libroId = rs.getInt("id");
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        libroId = rs.getInt("id");
+                    }
                 }
             }
 
@@ -118,7 +208,7 @@ public class DaoBook {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al eliminar favorito", e);
             return false;
         }
     }
@@ -130,10 +220,11 @@ public class DaoBook {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setString(2, bookApiId);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next();
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al verificar favorito", e);
             return false;
         }
     }
@@ -145,13 +236,14 @@ public class DaoBook {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setString(2, bookApiId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("estado");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("estado");
+                }
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al obtener estado del libro", e);
             return null;
         }
     }
@@ -172,10 +264,11 @@ public class DaoBook {
                      PreparedStatement ps = conn.prepareStatement(checkSql)) {
                     ps.setInt(1, userId);
                     ps.setInt(2, libroId);
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        existeEntrada = true;
-                        entradaId = rs.getInt("id");
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            existeEntrada = true;
+                            entradaId = rs.getInt("id");
+                        }
                     }
                 }
                 
@@ -202,7 +295,7 @@ public class DaoBook {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al guardar estado del libro", e);
             return false;
         }
     }
@@ -214,22 +307,23 @@ public class DaoBook {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setString(2, bookApiId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                Date fechaLectura = rs.getDate("fecha_lectura");
-                Double nota = rs.getDouble("nota");
-                String comentario = rs.getString("comentario");
-                
-                LocalDate localFechaLectura = null;
-                if (fechaLectura != null) {
-                    localFechaLectura = fechaLectura.toLocalDate();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Date fechaLectura = rs.getDate("fecha_lectura");
+                    Double nota = rs.getDouble("nota");
+                    String comentario = rs.getString("comentario");
+                    
+                    LocalDate localFechaLectura = null;
+                    if (fechaLectura != null) {
+                        localFechaLectura = fechaLectura.toLocalDate();
+                    }
+                    
+                    return new Object[] { localFechaLectura, nota, comentario };
                 }
-                
-                return new Object[] { localFechaLectura, nota, comentario };
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al obtener información de lectura", e);
             return null;
         }
     }
@@ -250,10 +344,11 @@ public class DaoBook {
                      PreparedStatement ps = conn.prepareStatement(checkSql)) {
                     ps.setInt(1, userId);
                     ps.setInt(2, libroId);
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        existeEntrada = true;
-                        entradaId = rs.getInt("id");
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            existeEntrada = true;
+                            entradaId = rs.getInt("id");
+                        }
                     }
                 }
                 
@@ -284,46 +379,43 @@ public class DaoBook {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al guardar información de lectura", e);
             return false;
         }
     }
     
-    // Obtener información de préstamo de un libro
     public static Object[] getInformacionPrestamo(int userId, String bookApiId) {
         String sql = "SELECT ul.prestado_a, ul.fecha_prestamo, ul.devuelto FROM usuarios_libros ul JOIN libros l ON ul.libro_id = l.id WHERE ul.usuario_id = ? AND l.id_api = ? AND ul.estado = 'prestado'";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             stmt.setString(2, bookApiId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String prestadoA = rs.getString("prestado_a");
-                Date fechaPrestamo = rs.getDate("fecha_prestamo");
-                Boolean devuelto = rs.getBoolean("devuelto");
-                
-                LocalDate localFechaPrestamo = null;
-                if (fechaPrestamo != null) {
-                    localFechaPrestamo = fechaPrestamo.toLocalDate();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String prestadoA = rs.getString("prestado_a");
+                    Date fechaPrestamo = rs.getDate("fecha_prestamo");
+                    Boolean devuelto = rs.getBoolean("devuelto");
+                    
+                    LocalDate localFechaPrestamo = null;
+                    if (fechaPrestamo != null) {
+                        localFechaPrestamo = fechaPrestamo.toLocalDate();
+                    }
+                    
+                    return new Object[] { prestadoA, localFechaPrestamo, devuelto };
                 }
-                
-                return new Object[] { prestadoA, localFechaPrestamo, devuelto };
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al obtener información de préstamo", e);
             return null;
         }
     }
     
-    // Guardar información de préstamo de un libro
     public static boolean guardarInformacionPrestamo(int userId, Book libro, String prestadoA, LocalDate fechaPrestamo, boolean devuelto) {
         try {
-            // Primero, obtener el ID del libro
             int libroId = obtenerOCrearLibro(libro);
             
             if (libroId != -1) {
-                // Verificar si ya existe una entrada para este libro y usuario
                 String checkSql = "SELECT id FROM usuarios_libros WHERE usuario_id = ? AND libro_id = ? AND estado = 'prestado'";
                 boolean existeEntrada = false;
                 int entradaId = -1;
@@ -332,14 +424,14 @@ public class DaoBook {
                      PreparedStatement ps = conn.prepareStatement(checkSql)) {
                     ps.setInt(1, userId);
                     ps.setInt(2, libroId);
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        existeEntrada = true;
-                        entradaId = rs.getInt("id");
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            existeEntrada = true;
+                            entradaId = rs.getInt("id");
+                        }
                     }
                 }
                 
-                // Actualizar o insertar según corresponda
                 String sql;
                 if (existeEntrada) {
                     sql = "UPDATE usuarios_libros SET prestado_a = ?, fecha_prestamo = ?, devuelto = ? WHERE id = ?";
@@ -366,12 +458,11 @@ public class DaoBook {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al guardar información de préstamo", e);
             return false;
         }
     }
     
-    // Obtener libros por estado
     public static List<BookCollection> getLibrosPorEstado(int userId, String estado) {
         List<BookCollection> libros = new ArrayList<>();
         
@@ -384,127 +475,168 @@ public class DaoBook {
             
             stmt.setInt(1, userId);
             stmt.setString(2, estado);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                String id = rs.getString("id_api");
-                String isbn = rs.getString("isbn");
-                String titulo = rs.getString("titulo");
-                String autor = rs.getString("autor");
-                
-                // Crear una lista de autores
-                List<String> autores = new ArrayList<>();
-                autores.add(autor);
-                
-                // Crear el objeto Book
-                Book book = new Book(id, isbn, titulo, autores, "");
-                
-                // Crear el objeto BookCollection según el estado
-                BookCollection bookCollection;
-                
-                if ("leído".equals(estado)) {
-                    Date fechaLectura = rs.getDate("fecha_lectura");
-                    double nota = rs.getDouble("nota");
-                    String comentario = rs.getString("comentario");
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String id = rs.getString("id_api");
+                    String isbn = rs.getString("isbn");
+                    String titulo = rs.getString("titulo");
+                    String autor = rs.getString("autor");
                     
-                    LocalDate localFechaLectura = null;
-                    if (fechaLectura != null) {
-                        localFechaLectura = fechaLectura.toLocalDate();
+                    List<String> autores = new ArrayList<>();
+                    autores.add(autor);
+                    
+                    Book book = new Book(id, isbn, titulo, autores, "");
+                    
+                    BookCollection bookCollection;
+                    
+                    if ("leído".equals(estado)) {
+                        Date fechaLectura = rs.getDate("fecha_lectura");
+                        double nota = rs.getDouble("nota");
+                        String comentario = rs.getString("comentario");
+                        
+                        LocalDate localFechaLectura = null;
+                        if (fechaLectura != null) {
+                            localFechaLectura = fechaLectura.toLocalDate();
+                        }
+                        
+                        bookCollection = new BookCollection(book, estado, localFechaLectura, nota, comentario);
+                    } else if ("prestado".equals(estado)) {
+                        String prestadoA = rs.getString("prestado_a");
+                        Date fechaPrestamo = rs.getDate("fecha_prestamo");
+                        boolean devuelto = rs.getBoolean("devuelto");
+                        
+                        LocalDate localFechaPrestamo = null;
+                        if (fechaPrestamo != null) {
+                            localFechaPrestamo = fechaPrestamo.toLocalDate();
+                        }
+                        
+                        bookCollection = new BookCollection(book, estado, prestadoA, localFechaPrestamo, devuelto);
+                    } else {
+                        bookCollection = new BookCollection(book, estado);
                     }
                     
-                    bookCollection = new BookCollection(book, estado, localFechaLectura, nota, comentario);
-                } else if ("prestado".equals(estado)) {
-                    String prestadoA = rs.getString("prestado_a");
-                    Date fechaPrestamo = rs.getDate("fecha_prestamo");
-                    boolean devuelto = rs.getBoolean("devuelto");
-                    
-                    LocalDate localFechaPrestamo = null;
-                    if (fechaPrestamo != null) {
-                        localFechaPrestamo = fechaPrestamo.toLocalDate();
-                    }
-                    
-                    bookCollection = new BookCollection(book, estado, prestadoA, localFechaPrestamo, devuelto);
-                } else {
-                    bookCollection = new BookCollection(book, estado);
+                    libros.add(bookCollection);
                 }
-                
-                libros.add(bookCollection);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al obtener libros por estado", e);
         }
         
         return libros;
     }
     
-    // Método auxiliar para obtener o crear un libro en la base de datos
     private static int obtenerOCrearLibro(Book libro) throws SQLException {
-        // Primero, intentar obtener el ID del libro
         String findSql = "SELECT id FROM libros WHERE id_api = ?";
         try (Connection conn = Conexion.conectar();
              PreparedStatement ps = conn.prepareStatement(findSql)) {
             ps.setString(1, libro.getId());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
             }
         }
         
-        // Si no existe, crear el libro
         String insertSql = "INSERT INTO libros (titulo, autor, id_api, isbn, agregado_por_usuario) VALUES (?, ?, ?, ?, false)";
         try (Connection conn = Conexion.conectar();
-             PreparedStatement ps = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, libro.getTitle());
-            ps.setString(2, libro.getAuthors() != null && !libro.getAuthors().isEmpty() ? libro.getAuthors().get(0) : "Desconocido");
+            ps.setString(2, libro.getAuthors() != null && !libro.getAuthors().isEmpty() ? String.join(", ", libro.getAuthors()) : "Desconocido");
             ps.setString(3, libro.getId());
             ps.setString(4, libro.getIsbn());
             ps.executeUpdate();
             
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt(1);
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         }
         
         return -1;
     }
     
-    // Método auxiliar para actualizar el estado de un libro en usuarios_libros
-    private static void actualizarEstadoLibro(int userId, int libroId, String estado) throws SQLException {
-        // Verificar si ya existe una entrada para este libro y usuario
-        String checkSql = "SELECT id FROM usuarios_libros WHERE usuario_id = ? AND libro_id = ? AND estado != 'favorito'";
-        boolean existeEntrada = false;
-        int entradaId = -1;
-        
-        try (Connection conn = Conexion.conectar();
-             PreparedStatement ps = conn.prepareStatement(checkSql)) {
-            ps.setInt(1, userId);
-            ps.setInt(2, libroId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                existeEntrada = true;
-                entradaId = rs.getInt("id");
+    public static boolean guardarLibroManual(int userId, Book libro, String estado) {
+        Connection conn = null;
+        try {
+            conn = Conexion.conectar();
+            if (conn == null) {
+                System.err.println("Error: No se pudo establecer conexión con la base de datos");
+                return false;
             }
-        }
-        
-        // Actualizar o insertar según corresponda
-        String sql;
-        if (existeEntrada) {
-            sql = "UPDATE usuarios_libros SET estado = ? WHERE id = ?";
-            try (Connection conn = Conexion.conectar();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, estado);
-                ps.setInt(2, entradaId);
-                ps.executeUpdate();
+            
+            // Primero verificar si el libro ya existe en la base de datos
+            String checkSql = "SELECT id FROM libros WHERE id_api = ?";
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setString(1, libro.getId());
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    int libroId;
+                    
+                    if (rs.next()) {
+                        // El libro ya existe, obtener su ID
+                        libroId = rs.getInt("id");
+                        System.out.println("Libro encontrado en la base de datos, ID: " + libroId);
+                    } else {
+                        // El libro no existe, insertarlo
+                        System.out.println("Libro no encontrado, insertando nuevo libro");
+                        
+                        String insertLibroSql = "INSERT INTO libros (id_api, titulo, autor, editorial, fecha_publicacion, isbn, agregado_por_usuario) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        try (PreparedStatement insertLibroStmt = conn.prepareStatement(insertLibroSql, Statement.RETURN_GENERATED_KEYS)) {
+                            
+                            insertLibroStmt.setString(1, libro.getId());
+                            insertLibroStmt.setString(2, libro.getTitle());
+                            insertLibroStmt.setString(3, libro.getAuthors() != null ? String.join(", ", libro.getAuthors()) : "");
+                            insertLibroStmt.setString(4, libro.getPublisher());
+                            insertLibroStmt.setString(5, libro.getPublishedDate());
+                            insertLibroStmt.setString(6, libro.getIsbn());
+                            insertLibroStmt.setBoolean(7, true);
+                            
+                            int rowsAffected = insertLibroStmt.executeUpdate();
+                            System.out.println("Filas afectadas al insertar libro: " + rowsAffected);
+                            
+                            // Obtener el ID generado
+                            try (ResultSet generatedKeys = insertLibroStmt.getGeneratedKeys()) {
+                                if (generatedKeys.next()) {
+                                    libroId = generatedKeys.getInt(1);
+                                    System.out.println("ID generado para el nuevo libro: " + libroId);
+                                } else {
+                                    throw new SQLException("No se pudo obtener el ID del libro insertado");
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Ahora insertar en la tabla de usuarios_libros
+                    System.out.println("Insertando relación usuario-libro. Usuario ID: " + userId + ", Libro ID: " + libroId + ", Estado: " + estado);
+                    String insertRelacionSql = "INSERT INTO usuarios_libros (usuario_id, libro_id, estado) VALUES (?, ?, ?) " +
+                                              "ON DUPLICATE KEY UPDATE estado = ?";
+                    try (PreparedStatement insertRelacionStmt = conn.prepareStatement(insertRelacionSql)) {
+                        
+                        insertRelacionStmt.setInt(1, userId);
+                        insertRelacionStmt.setInt(2, libroId);
+                        insertRelacionStmt.setString(3, estado);
+                        insertRelacionStmt.setString(4, estado);
+                        
+                        int rowsAffected = insertRelacionStmt.executeUpdate();
+                        System.out.println("Filas afectadas al insertar relación: " + rowsAffected);
+                        
+                        return rowsAffected > 0;
+                    }
+                }
             }
-        } else {
-            sql = "INSERT INTO usuarios_libros (usuario_id, libro_id, estado) VALUES (?, ?, ?)";
-            try (Connection conn = Conexion.conectar();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, userId);
-                ps.setInt(2, libroId);
-                ps.setString(3, estado);
-                ps.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error SQL al guardar libro manual: " + e.getMessage());
+            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error al guardar libro manual", e);
+            return false;
+        } finally {
+            // Asegurarse de cerrar la conexión
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    System.err.println("Error al cerrar la conexión: " + e.getMessage());
+                }
             }
         }
     }

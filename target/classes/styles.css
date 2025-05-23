@@ -167,3 +167,76 @@
   -fx-vgap: 40;
   -fx-padding: 20;
 }
+
+/* Estilo para el área de descripción */
+.description-text-area {
+  -fx-font-family: "Segoe UI", Arial, sans-serif;
+  -fx-font-size: 14px;
+  -fx-background-color: #f9f9f9;
+  -fx-border-color: #e0e0e0;
+  -fx-border-width: 1;
+  -fx-border-radius: 3;
+  -fx-padding: 5;
+  -fx-background-insets: 0;
+}
+
+.description-text-area .content {
+  -fx-background-color: #f9f9f9;
+  -fx-padding: 5;
+  -fx-background-insets: 0;
+}
+
+.description-text-area:focused {
+  -fx-background-color: #f9f9f9;
+  -fx-border-color: #1976d2;
+}
+
+.description-text-area .scroll-pane {
+  -fx-background-color: transparent;
+  -fx-background-insets: 0;
+  -fx-padding: 0;
+}
+
+.description-text-area .scroll-pane .viewport {
+  -fx-background-color: transparent;
+}
+
+/* Estilos para las opiniones */
+.opiniones-list {
+  -fx-background-color: white;
+  -fx-background-radius: 5;
+  -fx-border-color: #e0e0e0;
+  -fx-border-width: 1;
+  -fx-border-radius: 5;
+  -fx-padding: 10;
+}
+
+.opinion-item {
+  -fx-background-color: #f9f9f9;
+  -fx-background-radius: 5;
+  -fx-border-color: #e0e0e0;
+  -fx-border-width: 1;
+  -fx-border-radius: 5;
+  -fx-padding: 10;
+  -fx-margin: 0 0 10 0;
+}
+
+.opinion-usuario {
+  -fx-font-weight: bold;
+  -fx-font-size: 14px;
+}
+
+.opinion-fecha {
+  -fx-font-size: 12px;
+  -fx-text-fill: #757575;
+}
+
+.opinion-valoracion {
+  -fx-font-style: italic;
+  -fx-font-size: 13px;
+}
+
+.opinion-comentario {
+  -fx-font-size: 14px;
+  -fx-wrap-text: true;
+}
